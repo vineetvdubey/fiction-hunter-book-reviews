@@ -1,0 +1,25 @@
+* {
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Works on Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: grey;
+}
+
+/* Works on Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+  width: 12px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #d0cde1;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #56556b;
+  border-radius: 20px;
+}
