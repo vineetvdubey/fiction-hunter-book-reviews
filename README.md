@@ -1,4 +1,6 @@
-# fiction-hunter-book-reviews - [DEMO](https://fiction-hunter.herokuapp.com/)
+# Fiction Hunter - [DEMO](https://fiction-hunter.herokuapp.com/)
 
+### Explore, rate and review books based on fiction and fantasy.
 
-A website to rate and review some of the famous fiction/fantasy books. It is created using the MERN stack, with MongoDB hosted on Atlas and the website deployed on Heroku.
+### <code>WORK IN PROGRESS</code>
+<img src="https://media.giphy.com/media/cge9nG7e7wKWbMm9cY/giphy.gif" width="350" height="200" />
