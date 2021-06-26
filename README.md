@@ -1,4 +1,4 @@
-# Fiction Hunter - [DEMO](https://fiction-hunter.herokuapp.com/) - [API Doc](https://github.com/vineetvdubey/fiction-hunter-book-reviews/blob/main/documentation/APIdoc.md)
+# Fiction Hunter - [DEMO](https://fiction-hunter.herokuapp.com/) - [API Doc](/documentation/APIdoc.md) - [Design Doc](/documentation/DesignDoc.md)
 
 ### Explore, rate and review books based on fiction and fantasy.
 
