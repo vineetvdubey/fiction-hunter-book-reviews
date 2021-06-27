@@ -28,7 +28,7 @@
 > ### **Review**
 >
 > book_id (indexed)  
-> user_id (indexed)
+> user_id (indexed)  
 > message
 
 <br><hr><br>
