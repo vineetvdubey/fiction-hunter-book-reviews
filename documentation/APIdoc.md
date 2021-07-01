@@ -59,7 +59,6 @@ Status code: `400`
 ## Login user
 
 Used to login a user.  
-<br>
 
 Auth required: NO  
 Required role: NONE
