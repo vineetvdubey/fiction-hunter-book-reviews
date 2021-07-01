@@ -1,7 +1,18 @@
 import './App.css';
+import React from 'react';
+import LoginPage from './LoginPage';
+import Profile from './Profile';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 function App() {
-  return <h1>WORK IN PROGRESS</h1>;
+  return (
+    <Router>
+      <Switch>
+        <Route exact path="/" component={LoginPage} />
+        <Route exact path="/profile" component={Profile} />
+      </Switch>
+    </Router>
+  );
 }
 
 export default App;
