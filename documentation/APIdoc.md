@@ -204,10 +204,9 @@ Status code: `200`
   "averageRating": "[averageRating]",
   "reviews": [
     {
-      "reviewId": "[review id]",
       "name": "[name of reviewer]",
       "message": "[review message]",
-      "reviewedAt": "[timstamp of review]"
+      "postedAt": "[timstamp of review]"
     },
     {
       ...
