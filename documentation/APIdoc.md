@@ -194,7 +194,7 @@ Required role: NONE
 
 Status code: `200`
 
-```json
+```
 {
   "bookId": "[book id]",
   "title": "[title]",
@@ -204,9 +204,10 @@ Status code: `200`
   "averageRating": "[averageRating]",
   "reviews": [
     {
+      "userId": "[userId of reviewer]",
       "name": "[name of reviewer]",
       "message": "[review message]",
-      "postedAt": "[timstamp of review]"
+      "postedAt": "[epoch milliseconds]"
     },
     {
       ...
