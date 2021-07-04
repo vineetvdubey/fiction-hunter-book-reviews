@@ -27,14 +27,14 @@ Required role: NONE
 ```json
 {
   "email": "[valid email address]",
-  "name": "[non empty name]",
+  "userName": "[non empty name]",
   "password": "[password in plain text]"
 }
 ```
 
 ### Success Response
 
-Status code: `200`
+Status code: `201`
 
 ```json
 {
@@ -106,7 +106,7 @@ Used to delete a session.
 Auth required: NONE  
 Required role: NONE
 
-`DELETE` `/api/sessions`
+`DELETE` `/api/sessions/me`
 
 ### Success Response
 
@@ -120,7 +120,7 @@ Status code: `204`
 Gets the id, name and role of the logged in user. Can also be used to verify if the user is logged in.
 
 Auth required: YES  
-Required role: NONE
+Required role: ADMIN/USER
 
 `POST` `/api/users/me`
 
@@ -131,7 +131,7 @@ Status code: `200`
 ```json
 {
   "userId": "[user id]",
-  "name": "[name]",
+  "userName": "[userName]",
   "role": "USER"
 }
 ```
@@ -205,22 +205,15 @@ Status code: `200`
   "reviews": [
     {
       "userId": "[userId of reviewer]",
-      "name": "[name of reviewer]",
+      "userName": "[name of reviewer]",
       "message": "[review message]",
       "postedAt": "[epoch milliseconds]"
     },
     {
       ...
     }
-  ],
-  "myReviewId" : "[user's review id for this book]"
+  ]
 ```
-
-Conditions for `myReviewId`:
-
-- _myReviewId_ key will not appear for non logged-in users.
-- _myReviewId_ key will have an empty string for logged in users who haven't reviewed the book.
-- _myReviewId_ key will have the reviewdId for those users who have reviewed the book.
 
 <hr>
 <br>
@@ -263,9 +256,9 @@ Status code: `201`
 Adds a rating to a book.
 
 Auth required: YES  
-Required role: USER
+Required role: USER/ADMIN
 
-`POST` `/api/books/:bookId/ratings`
+`PUT` `/api/books/:bookId/ratings`
 
 ### Request Data
 
@@ -298,7 +291,7 @@ Status code: `401`
 Deletes logged in user's rating to a book.
 
 Auth required: YES  
-Required role: USER
+Required role: USER/ADMIN
 
 `DELETE` `/api/books/:bookId/ratings/me`
 
@@ -325,7 +318,7 @@ Status code: `401`
 Adds a review to a book.
 
 Auth required: YES  
-Required role: USER
+Required role: USER/ADMIN
 
 `POST` `/api/books/:bookId/reviews`
 
@@ -360,7 +353,7 @@ Status code: `401`
 Deletes logged in user's review to a book.
 
 Auth required: YES  
-Required role: USER
+Required role: USER/ADMIN
 
 `DELETE` `/api/books/:bookId/reviews/me`
 
