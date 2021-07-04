@@ -26,9 +26,8 @@
 ### UserSchema
 ```javascript
 {
-  _id: { type: Schema.ObjectId, alias: 'userId', auto: true },
   email: { type: String, required: true, unique: true, index: true, lowercase: true },
-  userName: { type: String, required: true, unique: true },
+  userName: { type: String, required: true },
   role: { type: String, enum: ['USER', 'ADMIN'], default: 'USER' },
 }
 ```
