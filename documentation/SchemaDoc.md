@@ -15,7 +15,7 @@
 ### UserCredentialSchema
 ```javascript
 {
-  _id: { type: String, alias: 'email', lowercase: true },
+  email: { type: String, required: true, unique: true, index: true, lowercase: true },
   password: { type: String, required: true },
   createdAt: { type: Number, default: Date.now() },
   updatedAt: { type: Number, default: Date.now() },
