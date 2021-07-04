@@ -5,8 +5,8 @@ const { Schema } = mongoose;
 const ReviewSchema = new Schema(
   {
     userId: { type: String, required: true },
-    userName: { type: String, required: true },
-    message: { type: String, required: true },
+    userName: { type: String, required: true, trim: true },
+    message: { type: String, required: true, trim: true },
     postedAt: { type: Number, default: Date.now },
   },
   { _id: false },
@@ -22,10 +22,10 @@ const RatingSchema = new Schema(
 
 const BookSchema = new Schema({
   _id: { type: Schema.ObjectId, alias: 'bookId', auto: true },
-  title: { type: String, required: true },
-  author: { type: String, required: true },
-  description: { type: String, default: '' },
-  imageUrl: { type: String, default: '' },
+  title: { type: String, required: true, trim: true },
+  author: { type: String, required: true, trim: true },
+  description: { type: String, default: '', trim: true },
+  imageUrl: { type: String, default: '', trim: true },
   ratingCount: { type: Number, default: 0 },
   ratingValue: { type: Number, default: 0 },
   reviews: [ReviewSchema],
