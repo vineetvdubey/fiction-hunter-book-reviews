@@ -5,8 +5,7 @@ const router = express.Router();
 
 /* ***********************************************************
  * Helpers to handle error scenarios - Start
- * ***********************************************************
- */
+ * ******************************************************** */
 const handleServerError = (err, res) => {
   // eslint-disable-next-line no-console
   console.error(err);
