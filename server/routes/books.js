@@ -1,80 +1,82 @@
 const express = require('express');
-const { ObjectId } = require('mongoose').Types;
 const Book = require('../models/book');
-const Rating = require('../models/rating');
 
 const router = express.Router();
 
-const serverError = (err, res) => {
-  console.error(err);
-  res.status(500).send({ error: 'Internal Server Error' });
-};
-
-const invalidJson = (res) => res.status(400).send({ error: 'Missing mandatory fields in json body. Refer API Docs.' });
-
-const isValidObjectId = (id) => {
-  if (ObjectId.isValid(id)) {
-    return String(new ObjectId(id)) === id;
-  }
-  return false;
-};
-
-/**
- * Middlewares specific to books route
+/* ***********************************************************
+ * Helpers to handle error scenarios - Start
+ * ***********************************************************
  */
+const handleServerError = (err, res) => {
+  console.error(err);
+  if (err.name === 'CastError') {
+    res.status(400).send({ error: 'Invalid parameters.' });
+  } else {
+    res.status(500).send({ error: 'Internal Server Error. Please contact admin.' });
+  }
+};
+
+const handleBookNotFound = (res) => {
+  res.status(404).send({ error: `Book not found.` });
+};
+
+const handleInvalidJson = (res) => {
+  res.status(400).send({ error: 'Invalid/unexpected json body. Refer API Docs.' });
+};
+/* ***********************************************************
+ * Helpers to handle error scenarios - End
+ * ******************************************************** */
+
+/* ***********************************************************
+ * Middlewares specific to books apis - Start
+ * ******************************************************** */
 const middlewares = {
-  validateBookId(req, res, next) {
-    if (!isValidObjectId(req.params.bookId)) {
-      res.status(400).send({ error: `Book not found with bookId: ${req.params.bookId}` });
-      return;
-    }
-    next();
-  },
-  validateBookCreate(req, res, next) {
-    const { title, author, description } = req.body;
-    if (title && author && description) {
+  validateBookCreateJson(req, res, next) {
+    if (req.body.title && req.body.author && req.body.description) {
       next();
     } else {
-      invalidJson(res);
+      handleInvalidJson(res);
     }
   },
-  validateReviewCreate(req, res, next) {
+  validateReviewJson(req, res, next) {
     if (req.body.message) {
       next();
     } else {
-      invalidJson(res);
+      handleInvalidJson(res);
     }
   },
-  validateRatingCreate(req, res, next) {
+  validateRatingJson(req, res, next) {
     if (req.body.rating) {
       next();
     } else {
-      invalidJson(res);
+      handleInvalidJson(res);
     }
   },
   logger(req, res, next) {
-    console.log(`Request hit : ${req.originalUrl}`);
+    console.log(`Processing request: ${req.originalUrl}`);
     next();
   },
 };
+/* ***********************************************************
+ * Middlewares specific to books apis - End
+ * ******************************************************** */
 
-/**
- * Create a book
- */
-router.post('/', [middlewares.validateBookCreate, middlewares.logger], (req, res) => {
+/* ***********************************************************
+ * Routes for books - Start
+ * ******************************************************** */
+
+// Create a book
+router.post('/', [middlewares.validateBookCreateJson, middlewares.logger], (req, res) => {
   const { title, author, description, imageUrl } = req.body;
-  const newBook = new Book({ title, author, description, imageUrl });
-  newBook
-    .save()
+  const newBook = { title, author, description, imageUrl };
+  Book.create(newBook)
     .then((book) => {
       res.status(201).send({ bookId: book.bookId });
     })
-    .catch((err) => serverError(err, res));
+    .catch((err) => handleServerError(err, res));
 });
 
-/**
- * Get all books
- */
+// Get all books
 router.get('/', [middlewares.logger], (req, res) => {
   Book.find()
     .then((books) => {
@@ -87,15 +89,12 @@ router.get('/', [middlewares.logger], (req, res) => {
       }));
       res.send(result);
     })
-    .catch((err) => serverError(err, res));
+    .catch((err) => handleServerError(err, res));
 });
 
-/**
- * Get specific book
- */
-router.get('/:bookId', [middlewares.validateBookId, middlewares.logger], (req, res) => {
-  const { bookId } = req.params;
-  Book.findById(bookId)
+// Get a book
+router.get('/:bookId', [middlewares.logger], (req, res) => {
+  Book.findById(req.params.bookId)
     .then((book) => {
       if (book) {
         const result = {
@@ -109,111 +108,123 @@ router.get('/:bookId', [middlewares.validateBookId, middlewares.logger], (req, r
         };
         res.send(result);
       } else {
-        res.status(400).send({ error: `Book not found with bookId: ${bookId}` });
+        handleBookNotFound(res);
       }
     })
-    .catch((err) => serverError(err, res));
+    .catch((err) => handleServerError(err, res));
+});
+/* ***********************************************************
+ * Routes for books - End
+ * ******************************************************** */
+
+/* ***********************************************************
+ * Routes for reviews - Start
+ * ******************************************************** */
+
+// Add own review
+router.post('/:bookId/reviews', [middlewares.validateReviewJson, middlewares.logger], (req, res) => {
+  const { userId, userName } = req.session;
+  const { bookId } = req.params;
+  const review = { userId, userName, message: req.body.message };
+  Book.findOne({ _id: bookId })
+    .then((book) => {
+      if (book) {
+        const existingReview = book.reviews.find((obj) => obj.userId === userId);
+        if (existingReview) {
+          res.status(400).send({
+            error: 'Only one review allowed per user. Please delete existing review and try again. Refer API Docs.',
+          });
+        } else {
+          Book.updateOne({ _id: bookId }, { $push: { reviews: review } }).then(() => res.status(201).send());
+        }
+      } else {
+        handleBookNotFound(res);
+      }
+    })
+    .catch((err) => handleServerError(err, res));
 });
 
-/**
- * Create review
- */
-router.post(
-  '/:bookId/reviews',
-  [middlewares.validateBookId, middlewares.validateReviewCreate, middlewares.logger],
-  (req, res) => {
-    const { userId, userName } = req.session;
-    const { bookId } = req.params;
-    const { message } = req.body;
-    const review = {
-      userId,
-      userName,
-      message,
-    };
-    // TODO Check if review exist for current user before pushing to reviews array
-    Book.findByIdAndUpdate({ _id: bookId }, { $push: { reviews: review } })
-      .then(() => res.status(201).send())
-      .catch((err) => serverError(err, res));
-  },
-);
-
-/**
- * Delete review
- */
-router.delete('/:bookId/reviews/me', [middlewares.validateBookId, middlewares.logger], (req, res) => {
+// Delete own review
+router.delete('/:bookId/reviews/me', [middlewares.logger], (req, res) => {
   const { userId } = req.session;
   const { bookId } = req.params;
   Book.findByIdAndUpdate({ _id: bookId }, { $pull: { reviews: { userId } } })
-    .then(() => res.status(204).send())
-    .catch((err) => serverError(err, res));
+    .then((book) => {
+      if (book) {
+        res.status(204).send();
+      } else {
+        handleBookNotFound(res);
+      }
+    })
+    .catch((err) => handleServerError(err, res));
 });
+/* ***********************************************************
+ * Routes for reviews - End
+ * ******************************************************** */
 
-/**
- * Create rating
- * //TODO Document steps
- * //TODO try solving this without using additional Rating collection, use Books collection
- */
-router.post(
-  '/:bookId/ratings',
-  [middlewares.validateBookId, middlewares.validateRatingCreate, middlewares.logger],
-  (req, res) => {
-    req.session.userId = 'vineet'; // TODO remove this line, added for testing
-    const { userId } = req.session;
-    const { bookId } = req.params;
-    const { rating } = req.body;
-    const ratingId = { userId, bookId };
-    Rating.findOne({ _id: ratingId })
-      .then((ratingObj) => {
-        let deltaRatingValue;
-        let deltaRatingCount;
-        if (ratingObj) {
-          deltaRatingValue = rating - ratingObj.rating;
-          deltaRatingCount = 0;
-        } else {
-          deltaRatingValue = rating;
-          deltaRatingCount = 1;
-        }
-        Rating.updateOne({ _id: ratingId }, { rating }, { upsert: true }).then(() => {
-          Book.findByIdAndUpdate(
-            { _id: bookId },
-            { $inc: { ratingValue: deltaRatingValue, ratingCount: deltaRatingCount } },
-          )
-            .then(() => res.status(201).send())
-            .catch((err) => serverError(err, res));
-        });
-      })
-      .catch((err) => serverError(err, res));
-  },
-);
+/* ***********************************************************
+ * Routes for ratings - Start
+ * ******************************************************** */
 
-/**
- * Delete rating
- * //TODO Document steps
- * //TODO try solving this without using additional Rating collection, use Books collection
- */
-router.delete('/:bookId/ratings/me', [middlewares.validateBookId, middlewares.logger], (req, res) => {
-  req.session.userId = 'vineet'; // TODO remove this line, added for testing
+// Add own rating
+router.put('/:bookId/ratings', [middlewares.validateRatingJson, middlewares.logger], (req, res) => {
   const { userId } = req.session;
   const { bookId } = req.params;
-  const ratingId = { userId, bookId };
-  Rating.findOne({ _id: ratingId })
-    .then((ratingObj) => {
-      if (ratingObj) {
-        const deltaRatingValue = -1 * ratingObj.rating;
-        const deltaRatingCount = -1;
-        Rating.deleteOne({ _id: ratingId }).then(() => {
-          Book.findByIdAndUpdate(
-            { _id: bookId },
-            { $inc: { ratingValue: deltaRatingValue, ratingCount: deltaRatingCount } },
+  const { rating: newRating } = req.body;
+  Book.findOne({ _id: bookId })
+    .then((book) => {
+      if (book) {
+        const existingRatingsObj = book.ratings.find((obj) => obj.userId === userId);
+        if (existingRatingsObj) {
+          Book.updateOne(
+            { _id: bookId, 'ratings.userId': userId },
+            {
+              $set: { 'ratings.$.rating': newRating },
+              $inc: { ratingValue: newRating - existingRatingsObj.rating, ratingCount: 0 },
+            },
           )
             .then(() => res.status(201).send())
-            .catch((err) => serverError(err, res));
-        });
+            .catch((err) => handleServerError(err, res));
+        } else {
+          const newRatingsObj = { userId, rating: newRating };
+          Book.updateOne(
+            { _id: bookId },
+            {
+              $push: { ratings: newRatingsObj },
+              $inc: { ratingValue: newRating, ratingCount: 1 },
+            },
+          ).then(() => res.status(201).send());
+        }
+      } else {
+        handleBookNotFound(res);
+      }
+    })
+    .catch((err) => handleServerError(err, res));
+});
+
+// Delete own rating
+router.delete('/:bookId/ratings/me', [middlewares.logger], (req, res) => {
+  const { userId } = req.session;
+  const { bookId } = req.params;
+  Book.findOne({ _id: bookId, 'ratings.userId': userId })
+    .then((book) => {
+      if (book) {
+        const existingRating = book.ratings.find((obj) => obj.userId === userId).rating;
+        Book.updateOne(
+          { _id: bookId, 'ratings.userId': userId },
+          {
+            $pull: { ratings: { userId } },
+            $inc: { ratingValue: 0 - existingRating, ratingCount: -1 },
+          },
+        ).then(() => res.status(204).send());
       } else {
         res.status(204).send();
       }
     })
-    .catch((err) => serverError(err, res));
+    .catch((err) => handleServerError(err, res));
 });
+/* ***********************************************************
+ * Routes for ratings - End
+ * ******************************************************** */
 
 module.exports = router;
