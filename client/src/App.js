@@ -1,15 +1,13 @@
 import './App.css';
 import React from 'react';
-import LoginPage from './LoginPage';
-import Profile from './Profile';
+import HomePage from './HomePage';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 function App() {
   return (
     <Router>
       <Switch>
-        <Route exact path="/" component={LoginPage} />
-        <Route exact path="/profile" component={Profile} />
+        <Route exact path="/" component={HomePage} />
       </Switch>
     </Router>
   );
