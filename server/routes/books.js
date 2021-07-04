@@ -8,6 +8,7 @@ const router = express.Router();
  * ***********************************************************
  */
 const handleServerError = (err, res) => {
+  // eslint-disable-next-line no-console
   console.error(err);
   if (err.name === 'CastError') {
     res.status(400).send({ error: 'Invalid parameters.' });
@@ -53,6 +54,7 @@ const middlewares = {
     }
   },
   logger(req, res, next) {
+    // eslint-disable-next-line no-console
     console.log(`Processing request: ${req.originalUrl}`);
     next();
   },
