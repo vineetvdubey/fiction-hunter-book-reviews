@@ -2,89 +2,89 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const auth = require('../middlewares/auth');
 const User = require('../models/user');
-const UserCredential = require('../models/user-credential');
+const UserCredential = require('../models/userCredential');
 
 const router = express.Router();
 
-router.post('/', (req, res) => {
-  if (!req.body) {
-    res.status(400).send({ error: 'Email and Password not present in request' });
-    return;
+/* ***********************************************************
+ * Helpers to handle error scenarios - Start
+ * ******************************************************** */
+const handleServerError = (err, res) => {
+  // eslint-disable-next-line no-console
+  console.error(err);
+  if (err.name === 'CastError') {
+    res.status(400).send({ error: 'Invalid parameters.' });
+  } else {
+    res.status(500).send({ error: 'Internal Server Error. Please contact admin.' });
   }
+};
 
-  const { email, password } = req.body;
+const handleInvalidJson = (res) => {
+  res.status(400).send({ error: 'Invalid/unexpected json body. Refer API Docs.' });
+};
+/* ***********************************************************
+ * Helpers to handle error scenarios - End
+ * ******************************************************** */
 
-  if (!email) {
-    res.status(400).send({ error: 'Email not present in request' });
-    return;
-  }
+/* ***********************************************************
+ * Middlewares specific to books apis - Start
+ * ******************************************************** */
+const middlewares = {
+  validateUserCreateJson(req, res, next) {
+    if (req.body.email && req.body.password && req.body.userName) {
+      next();
+    } else {
+      handleInvalidJson(res);
+    }
+  },
+  logger(req, res, next) {
+    // eslint-disable-next-line no-console
+    console.log(`Processing request: ${req.originalUrl}`);
+    next();
+  },
+};
+/* ***********************************************************
+ * Middlewares specific to books apis - End
+ * ******************************************************** */
 
-  if (!password) {
-    res.status(400).send({ error: 'Password not present in request' });
-    return;
-  }
+/* ***********************************************************
+ * Routes for users - Start
+ * ******************************************************** */
 
-  UserCredential.findOne({ email })
-    .then((user) => {
-      if (user) {
-        res.status(400).send({ error: 'User already signed up' });
-        return;
-      }
-
-      const hash = bcrypt.hashSync(password);
-
-      const userCredential = new UserCredential({ email, password: hash });
-
-      userCredential.save().then(() => {
-        const u = new User({ _id: userCredential.id, email });
-        u.save().then(() => {
-          res.status(201).send({ id: userCredential.id });
+// Create a user
+router.post('/', [middlewares.validateUserCreateJson, middlewares.logger], (req, res) => {
+  const { email, password, userName } = req.body;
+  UserCredential.findOne({ email: email.toLowerCase() })
+    .then((entry) => {
+      if (entry) {
+        res.status(400).send({ error: 'User already exists.' });
+      } else {
+        const newUserCredential = { email, password: bcrypt.hashSync(password) };
+        UserCredential.create(newUserCredential).then(() => {
+          const newUser = { email, userName };
+          User.create(newUser).then((user) => {
+            res.status(201).send({ userId: user._id });
+          });
         });
-      });
+      }
     })
-    .catch(() => {
-      res.status(500).send({ error: 'Internal Server Error' });
-    });
+    .catch((err) => handleServerError(err));
 });
 
-router.get('/me', auth.authenticate, (req, res) => {
+// Get own user
+router.get('/me', auth.authorizeUser, (req, res) => {
   User.findOne({ _id: req.session.userId })
     .then((user) => {
-      res.send(user);
+      res.send({
+        userId: user._id,
+        userName: user.userName,
+        role: user.role,
+      });
     })
-    .catch(() => {
-      res.status(500).send({ error: 'Internal Server Error' });
-    });
+    .catch((err) => handleServerError(err));
 });
-
-router.get('/:userId', (req, res) => {
-  User.findOne({ _id: req.params.userId })
-    .then((user) => {
-      res.send(user);
-    })
-    .catch(() => {
-      res.status(500).send({ error: 'Internal Server Error' });
-    });
-});
-
-router.put('/me', auth.authenticate, (req, res) => {
-  if (!req.session.userId) {
-    res.send(401).send({ error: 'Not logged in' });
-  }
-
-  const { firstName, lastName } = req.body;
-
-  const updateQuery = {};
-  firstName !== undefined && (updateQuery.firstName = firstName);
-  lastName !== undefined && (updateQuery.lastName = lastName);
-
-  User.updateOne({ _id: req.session.userId }, updateQuery)
-    .then(() => {
-      res.status(204).send();
-    })
-    .catch(() => {
-      res.status(500).send({ error: 'Internal Server Error' });
-    });
-});
+/* ***********************************************************
+ * Routes for users - End
+ * ******************************************************** */
 
 module.exports = router;

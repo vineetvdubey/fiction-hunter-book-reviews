@@ -1,12 +1,36 @@
-const authenticate = (req, res, next) => {
-  if (!req.session.userId) {
-    res.status(401).send('Not Logged In');
-    return;
-  }
+const handleNoAuthentication = (res) => {
+  res.status(401).send({ error: 'Please login.' });
+};
 
-  next();
+const handleNoAuthorization = (res) => {
+  res.status(403).send({ error: 'Insufficient permission.' });
+};
+
+const authorizeUser = (req, res, next) => {
+  if (req.session.userId && req.session.role) {
+    if (req.session.role === 'USER' || req.session.role === 'ADMIN') {
+      next();
+    } else {
+      handleNoAuthorization(res);
+    }
+  } else {
+    handleNoAuthentication(res);
+  }
+};
+
+const authorizeAdmin = (req, res, next) => {
+  if (req.session.userId && req.session.role) {
+    if (req.session.role === 'ADMIN') {
+      next();
+    } else {
+      handleNoAuthorization(res);
+    }
+  } else {
+    handleNoAuthentication(res);
+  }
 };
 
 module.exports = {
-  authenticate,
+  authorizeUser,
+  authorizeAdmin,
 };

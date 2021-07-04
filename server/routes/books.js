@@ -1,4 +1,5 @@
 const express = require('express');
+const auth = require('../middlewares/auth');
 const Book = require('../models/book');
 
 const router = express.Router();
@@ -67,7 +68,7 @@ const middlewares = {
  * ******************************************************** */
 
 // Create a book
-router.post('/', [middlewares.validateBookCreateJson, middlewares.logger], (req, res) => {
+router.post('/', [auth.authorizeAdmin, middlewares.validateBookCreateJson, middlewares.logger], (req, res) => {
   const { title, author, description, imageUrl } = req.body;
   const newBook = { title, author, description, imageUrl };
   Book.create(newBook)
@@ -123,30 +124,34 @@ router.get('/:bookId', [middlewares.logger], (req, res) => {
  * ******************************************************** */
 
 // Add own review
-router.post('/:bookId/reviews', [middlewares.validateReviewJson, middlewares.logger], (req, res) => {
-  const { userId, userName } = req.session;
-  const { bookId } = req.params;
-  const review = { userId, userName, message: req.body.message };
-  Book.findOne({ _id: bookId })
-    .then((book) => {
-      if (book) {
-        const existingReview = book.reviews.find((obj) => obj.userId === userId);
-        if (existingReview) {
-          res.status(400).send({
-            error: 'Only one review allowed per user. Please delete existing review and try again. Refer API Docs.',
-          });
+router.post(
+  '/:bookId/reviews',
+  [auth.authorizeUser, middlewares.validateReviewJson, middlewares.logger],
+  (req, res) => {
+    const { userId, userName } = req.session;
+    const { bookId } = req.params;
+    const review = { userId, userName, message: req.body.message };
+    Book.findOne({ _id: bookId })
+      .then((book) => {
+        if (book) {
+          const existingReview = book.reviews.find((obj) => obj.userId === userId);
+          if (existingReview) {
+            res.status(400).send({
+              error: 'Only one review allowed per user. Please delete existing review and try again. Refer API Docs.',
+            });
+          } else {
+            Book.updateOne({ _id: bookId }, { $push: { reviews: review } }).then(() => res.status(200).send());
+          }
         } else {
-          Book.updateOne({ _id: bookId }, { $push: { reviews: review } }).then(() => res.status(201).send());
+          handleBookNotFound(res);
         }
-      } else {
-        handleBookNotFound(res);
-      }
-    })
-    .catch((err) => handleServerError(err, res));
-});
+      })
+      .catch((err) => handleServerError(err, res));
+  },
+);
 
 // Delete own review
-router.delete('/:bookId/reviews/me', [middlewares.logger], (req, res) => {
+router.delete('/:bookId/reviews/me', [auth.authorizeUser, middlewares.logger], (req, res) => {
   const { userId } = req.session;
   const { bookId } = req.params;
   Book.findByIdAndUpdate({ _id: bookId }, { $pull: { reviews: { userId } } })
@@ -168,7 +173,7 @@ router.delete('/:bookId/reviews/me', [middlewares.logger], (req, res) => {
  * ******************************************************** */
 
 // Add own rating
-router.put('/:bookId/ratings', [middlewares.validateRatingJson, middlewares.logger], (req, res) => {
+router.put('/:bookId/ratings', [auth.authorizeUser, middlewares.validateRatingJson, middlewares.logger], (req, res) => {
   const { userId } = req.session;
   const { bookId } = req.params;
   const { rating: newRating } = req.body;
@@ -183,9 +188,7 @@ router.put('/:bookId/ratings', [middlewares.validateRatingJson, middlewares.logg
               $set: { 'ratings.$.rating': newRating },
               $inc: { ratingValue: newRating - existingRatingsObj.rating, ratingCount: 0 },
             },
-          )
-            .then(() => res.status(201).send())
-            .catch((err) => handleServerError(err, res));
+          ).then(() => res.status(200).send());
         } else {
           const newRatingsObj = { userId, rating: newRating };
           Book.updateOne(
@@ -194,7 +197,7 @@ router.put('/:bookId/ratings', [middlewares.validateRatingJson, middlewares.logg
               $push: { ratings: newRatingsObj },
               $inc: { ratingValue: newRating, ratingCount: 1 },
             },
-          ).then(() => res.status(201).send());
+          ).then(() => res.status(200).send());
         }
       } else {
         handleBookNotFound(res);
@@ -204,7 +207,7 @@ router.put('/:bookId/ratings', [middlewares.validateRatingJson, middlewares.logg
 });
 
 // Delete own rating
-router.delete('/:bookId/ratings/me', [middlewares.logger], (req, res) => {
+router.delete('/:bookId/ratings/me', [auth.authorizeUser, middlewares.logger], (req, res) => {
   const { userId } = req.session;
   const { bookId } = req.params;
   Book.findOne({ _id: bookId, 'ratings.userId': userId })

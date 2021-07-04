@@ -15,7 +15,7 @@ const ReviewSchema = new Schema(
 const RatingSchema = new Schema(
   {
     userId: { type: String, required: true },
-    rating: { type: String, required: true },
+    rating: { type: Number, required: true, min: 1, max: 5 },
   },
   { _id: false },
 );
