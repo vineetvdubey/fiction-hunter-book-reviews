@@ -29,6 +29,7 @@ db.connect(process.env.MONGODB_URI).then(() => {
     api,
   );
 
+  app.use(express.static('public'));
   app.use(express.static(path.join(__dirname, 'client', 'build')));
 
   app.get('*', (req, res) => {
