@@ -1,0 +1,17 @@
+[
+  {
+    "role": "USER",
+    "email": "vineetvrules@gmail.com",
+    "userName": "vineetvdubey"
+  },
+  {
+    "role": "ADMIN",
+    "email": "admin@admin.com",
+    "userName": "admin"
+  },
+  {
+    "role": "USER",
+    "email": "test",
+    "userName": "test"
+  }
+]
