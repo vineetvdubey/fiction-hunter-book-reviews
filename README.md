@@ -1,6 +1,10 @@
-# Fiction Hunter - [DEMO](https://fiction-hunter.herokuapp.com/) - [API Doc](/documentation/APIdoc.md) - [Schema Doc](/documentation/SchemaDoc.md)
+# Fiction Hunter - [DEMO](https://fiction-hunter.herokuapp.com/) 
 
-### Explore, rate and review books based on fiction and fantasy.
+### Explore, rate and review books based on fiction and fantasy.  
+<br>
 
-### <code>WORK IN PROGRESS</code>
-<img src="https://media.giphy.com/media/cge9nG7e7wKWbMm9cY/giphy.gif" width="350" height="200" />
+### [API Doc](/documentation/APIdoc.md)  
+ 
+### [Schema Doc](/documentation/SchemaDoc.md)
+
+#### Backend completed. UI Work in progress.
