@@ -3,7 +3,7 @@ import './Header.css';
 function Header() {
   return (
     <>
-      <h1>Book Hunter - Header</h1>
+      <h1>Fiction Hunter</h1>
     </>
   );
 }
