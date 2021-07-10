@@ -1,10 +1,10 @@
 import './BooksListing.css';
 import React from 'react';
+import BooksListingEntry from './BooksListingEntry';
 
 class BooksListing extends React.Component {
   constructor(props) {
     super(props);
-    console.log(this.props);
     this.state = { books: [] };
   }
 
@@ -23,7 +23,11 @@ class BooksListing extends React.Component {
   render() {
     return (
       <>
-        <h2>Product listing</h2>
+        <div className="books-listing-entry-container">
+          {this.state.books.map((book) => (
+            <BooksListingEntry key={book.bookId} book={book} />
+          ))}
+        </div>
       </>
     );
   }
