@@ -1,14 +1,12 @@
 .footer-bar {
-  background-color: #3f3d56;
-  height: 80px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .footer-content {
-  font-size: 24px;
-  color: #ffffff;
+  font-size: 16px;
 }
 
 @media screen and (max-width: 480px) {
