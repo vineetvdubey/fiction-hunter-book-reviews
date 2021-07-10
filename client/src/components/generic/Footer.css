@@ -1,0 +1,32 @@
+.footer-bar {
+  background-color: #3f3d56;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-content {
+  font-size: 24px;
+  color: #ffffff;
+}
+
+@media screen and (max-width: 480px) {
+  .footer-bar {
+    height: 40px;
+  }
+
+  .footer-content {
+    font-size: 14px;
+  }
+}
+
+@media screen and (min-width: 481px) and (max-width: 960px) {
+  .footer-bar {
+    height: 60px;
+  }
+
+  .footer-content {
+    font-size: 20px;
+  }
+}
