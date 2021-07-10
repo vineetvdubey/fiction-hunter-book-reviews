@@ -33,7 +33,7 @@ const BookSchema = new Schema({
 });
 
 BookSchema.virtual('averageRating').get(function averageRating() {
-  return (this.ratingCount === 0 ? 0 : this.ratingValue / this.ratingCount).toFixed(2);
+  return +(this.ratingCount === 0 ? 0 : this.ratingValue / this.ratingCount).toFixed(2);
 });
 
 module.exports = mongoose.model('Book', BookSchema);
