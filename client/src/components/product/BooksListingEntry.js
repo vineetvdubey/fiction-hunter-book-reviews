@@ -18,6 +18,7 @@ function BooksListingEntry(props) {
         <div className="book-details">
           <div>{book.title}</div>
           <div>- by {book.author}</div>
+          <div>{book.averageRating === 0 ? 'Be the first to rate!' : `Rated: ${book.averageRating}/5`}</div>
         </div>
       </div>
     </>
