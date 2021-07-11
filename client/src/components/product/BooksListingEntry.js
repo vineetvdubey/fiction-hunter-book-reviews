@@ -6,7 +6,7 @@ function BooksListingEntry(props) {
   const book = props.book;
   return (
     <>
-      <div className="book-details-container">
+      <a href={`/details/${book.bookId}`} target="_blank" rel="noreferrer" className="book-details-container">
         <div className="book-img">
           <img
             src={book.imageUrl ? book.imageUrl : '/book-covers/default-cover.svg'}
@@ -20,7 +20,7 @@ function BooksListingEntry(props) {
           <div>- by {book.author}</div>
           <div>{book.averageRating === 0 ? 'Be the first to rate!' : `Rated: ${book.averageRating}/5`}</div>
         </div>
-      </div>
+      </a>
     </>
   );
 }
