@@ -1,4 +1,4 @@
-import './BooksListing.css';
+import './BookDetails.css';
 import React from 'react';
 
 class BookDetails extends React.Component {

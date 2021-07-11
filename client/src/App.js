@@ -1,7 +1,7 @@
 import './App.css';
 import React from 'react';
-import BooksListing from './components/product/BooksListing';
-import BookDetails from './components/product/BookDetails';
+import BooksListing from './components/product/product-listing/BooksListing';
+import BookDetails from './components/product/product-details/BookDetails';
 import Header from './components/generic/Header';
 import Footer from './components/generic/Footer';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
@@ -41,11 +41,11 @@ class App extends React.Component {
         <Header user={user} updateSession={this.updateSession} deleteSession={this.deleteSession} />
         <Router>
           <Switch>
-            <Route path="/">
-              <BooksListing user={user} />
-            </Route>
             <Route path="/details/:bookId">
               <BookDetails user={user} />
+            </Route>
+            <Route path="/">
+              <BooksListing user={user} />
             </Route>
           </Switch>
         </Router>
