@@ -32,17 +32,16 @@ class BookDetails extends React.Component {
             alt="book cover"
           />
         </div>
+        <hr />
         <div className="book-details">
           <div>{book.title}</div>
           <div>- by {book.author}</div>
           <div>{book.averageRating === 0 ? 'Be the first to rate!' : `Rated: ${book.averageRating}/5`}</div>
         </div>
-        <div>
-          {book.description}
-        </div>
-        <div>
-          {book.reviews}
-        </div>
+        <hr />
+        <div>{book.description}</div>
+        <hr />
+        <div>{JSON.stringify(book.reviews)}</div>
       </>
     );
   }
