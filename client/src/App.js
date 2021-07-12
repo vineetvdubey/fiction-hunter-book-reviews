@@ -41,12 +41,8 @@ class App extends React.Component {
         <Header user={user} updateSession={this.updateSession} deleteSession={this.deleteSession} />
         <Router>
           <Switch>
-            <Route path="/details/:bookId">
-              <BookDetails user={user} />
-            </Route>
-            <Route path="/">
-              <BooksListing user={user} />
-            </Route>
+            <Route exact path="/details/:bookId" render={(props) => <BookDetails user={user} {...props} />} />
+            <Route exact path="/" render={(props) => <BooksListing user={user} {...props} />} />
           </Switch>
         </Router>
         <Footer />
